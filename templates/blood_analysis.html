@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Group Analysis - BloodNet AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .input-section, .result-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .input-group:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.95rem;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: pointer;
+        }
+
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-group select.error {
+            border-color: #e74c3c;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 40px 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-placeholder {
+            color: #999;
+            font-size: 1.1rem;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .blood-group-result {
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+        }
+
+        .blood-group-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .blood-group-label {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .confidence-label {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .confidence-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .probabilities {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .prob-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .prob-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 1rem;
+        }
+
+        .prob-bar {
+            flex: 1;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .prob-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .prob-value {
+            font-weight: bold;
+            color: #333;
+            min-width: 60px;
+            text-align: right;
+            font-size: 0.95rem;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #fcc;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .reference-ranges {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Blood Group Analysis from CBC</h1>
+            <p>Advanced AI-powered blood group prediction using Complete Blood Count parameters</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">
+                    <span>📊</span>
+                    <span>Complete Blood Count (CBC) Parameters</span>
+                </h2>
+                
+                <div class="info-box">
+                    <h4>📋 How to Use</h4>
+                    <p>Select the clinical values for each CBC parameter based on laboratory reference ranges. The AI will analyze these patterns to predict the most likely blood group with confidence scoring.</p>
+                </div>
+                
+                <div class="error-message" id="errorMessage"></div>
+                
+                <form id="analysisForm">
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label for="param1">Hemoglobin (Hb)</label>
+                            <div class="helper-text">Oxygen-carrying protein in red blood cells</div>
+                            <select id="param1" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Anemia)</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High (Polycythemia)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: Male 13.5-17.5 g/dL, Female 12.0-15.5 g/dL</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param2">Red Blood Cell (RBC) Count</label>
+                            <div class="helper-text">Number of red blood cells per microliter</div>
+                            <select id="param2" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High</option>
+                            </select>
+                            <div class="reference-ranges">Reference: Male 4.5-5.9 million/μL, Female 4.0-5.2 million/μL</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param3">White Blood Cell (WBC) Count</label>
+                            <div class="helper-text">Immune system cells fighting infection</div>
+                            <select id="param3" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Leukopenia)</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High (Leukocytosis)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 4,500-11,000 cells/μL</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param4">Platelet Count</label>
+                            <div class="helper-text">Blood clotting cells</div>
+                            <select id="param4" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Thrombocytopenia)</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High (Thrombocytosis)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 150,000-450,000 platelets/μL</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param5">Hematocrit (HCT/PCV)</label>
+                            <div class="helper-text">Percentage of blood volume occupied by RBCs</div>
+                            <select id="param5" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High</option>
+                            </select>
+                            <div class="reference-ranges">Reference: Male 41%-50%, Female 36%-44%</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param6">Mean Corpuscular Volume (MCV)</label>
+                            <div class="helper-text">Average size of red blood cells</div>
+                            <select id="param6" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Microcytic)</option>
+                                <option value="0">Normal (Normocytic)</option>
+                                <option value="1">High (Macrocytic)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 80-100 fL</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param7">Mean Corpuscular Hemoglobin (MCH)</label>
+                            <div class="helper-text">Average amount of hemoglobin per RBC</div>
+                            <select id="param7" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 27-33 picograms</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param8">Mean Corpuscular Hemoglobin Concentration (MCHC)</label>
+                            <div class="helper-text">Concentration of hemoglobin in RBCs</div>
+                            <select id="param8" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Hypochromic)</option>
+                                <option value="0">Normal (Normochromic)</option>
+                                <option value="1">High (Hyperchromic)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 32%-36%</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param9">Red Cell Distribution Width (RDW)</label>
+                            <div class="helper-text">Variation in size of red blood cells</div>
+                            <select id="param9" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Anisocytosis)</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 11.5%-14.5%</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param10">Neutrophils</label>
+                            <div class="helper-text">Most common type of white blood cells</div>
+                            <select id="param10" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Neutropenia)</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High (Neutrophilia)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 40%-60% of WBCs</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param11">Lymphocytes</label>
+                            <div class="helper-text">White blood cells for immune response</div>
+                            <select id="param11" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low (Lymphopenia)</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High (Lymphocytosis)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 20%-40% of WBCs</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param12">Monocytes</label>
+                            <div class="helper-text">White blood cells that engulf pathogens</div>
+                            <select id="param12" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 2%-8% of WBCs</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param13">Eosinophils</label>
+                            <div class="helper-text">White blood cells for allergic responses</div>
+                            <select id="param13" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High (Eosinophilia)</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 0%-4% of WBCs</div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="param14">Basophils</label>
+                            <div class="helper-text">White blood cells for inflammatory responses</div>
+                            <select id="param14" required>
+                                <option value="">Select level...</option>
+                                <option value="-1">Low</option>
+                                <option value="0">Normal</option>
+                                <option value="1">High</option>
+                            </select>
+                            <div class="reference-ranges">Reference: 0%-1% of WBCs</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="analyze-btn" id="analyzeBtn">
+                        🧪 Analyze Blood Group
+                    </button>
+                </form>
+            </div>
+
+            <div class="result-section">
+                <h2 class="section-title">
+                    <span>🔬</span>
+                    <span>Predicted Blood Group Analysis</span>
+                </h2>
+                
+                <div class="result-card" id="resultCard">
+                    <div class="result-placeholder" id="placeholder">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">🩸</div>
+                        <h3>Ready for Analysis</h3>
+                        <p>Complete all 14 CBC parameters on the left and click "Analyze Blood Group" to see your detailed blood group prediction with confidence analysis.</p>
+                        <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                            The AI will analyze patterns in your CBC data to predict the most likely blood group (A+, A-, B+, B-, AB+, AB-, O+, O-) with probability scoring for all types.
+                        </p>
+                    </div>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing CBC parameters...</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">AI model processing blood group patterns...</p>
+                    </div>
+                    
+                    <div class="blood-group-result" id="result" style="display: none;">
+                        <div class="blood-group-icon">🩸</div>
+                        <div class="blood-group-label" id="bloodGroup">-</div>
+                        <div class="confidence-label">Prediction Confidence</div>
+                        <div class="confidence-value" id="confidence">-%</div>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 15px; color: #333;">📊 Probability Distribution</h4>
+                            <div class="probabilities" id="probabilities">
+                                <!-- Probabilities will be populated here -->
+                            </div>
+                        </div>
+
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                            <h4 style="color: #27ae60; margin-bottom: 10px;">💡 Interpretation</h4>
+                            <p id="interpretation" style="color: #555; font-size: 0.9rem; line-height: 1.5;">
+                                <!-- Interpretation will be populated here -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getInputValues() {
+            const values = [];
+            for (let i = 1; i <= 14; i++) {
+                const input = document.getElementById(`param${i}`);
+                const value = input.value.trim();
+                
+                if (value === '') {
+                    throw new Error(`Parameter ${i} (${input.previousElementSibling.textContent}) is required`);
+                }
+                
+                const numValue = parseFloat(value);
+                if (isNaN(numValue)) {
+                    throw new Error(`Parameter ${i} must be a valid number`);
+                }
+                
+                values.push(numValue);
+            }
+            return values;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 8000);
+        }
+
+        function clearErrors() {
+            const inputs = document.querySelectorAll('select');
+            inputs.forEach(input => input.classList.remove('error'));
+        }
+
+        function showLoading(show) {
+            document.getElementById('placeholder').style.display = show ? 'none' : 'block';
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('analyzeBtn').disabled = show;
+        }
+
+        function showResult(data) {
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            // Update main result
+            document.getElementById('bloodGroup').textContent = data.predicted_blood_group;
+            document.getElementById('confidence').textContent = data.confidence + '%';
+            
+            // Update probability bars
+            const probabilities = data.probabilities;
+            let probabilitiesHTML = '';
+            
+            // Sort blood groups by probability
+            const sortedGroups = Object.entries(probabilities)
+                .sort((a, b) => b[1] - a[1]);
+            
+            sortedGroups.forEach(([bloodGroup, probability]) => {
+                const isHighest = bloodGroup === data.predicted_blood_group;
+                probabilitiesHTML += `
+                    <div class="prob-item">
+                        <span class="prob-label" style="font-weight: ${isHighest ? 'bold' : '600'}">${bloodGroup}</span>
+                        <div class="prob-bar">
+                            <div class="prob-fill" style="width: ${probability}%; background: ${isHighest ? 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' : '#ddd'}"></div>
+                        </div>
+                        <span class="prob-value" style="font-weight: ${isHighest ? 'bold' : 'normal'}">${probability.toFixed(1)}%</span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('probabilities').innerHTML = probabilitiesHTML;
+            
+            // Add interpretation
+            const confidence = data.confidence;
+            let interpretation = '';
+            
+            if (confidence >= 85) {
+                interpretation = `High confidence prediction (${confidence}%). The CBC parameters show strong patterns characteristic of ${data.predicted_blood_group} blood group. This prediction is highly reliable for clinical decision-making.`;
+            } else if (confidence >= 70) {
+                interpretation = `Moderate-high confidence prediction (${confidence}%). The CBC parameters suggest ${data.predicted_blood_group} blood group with good reliability. Consider confirmatory testing for critical applications.`;
+            } else if (confidence >= 55) {
+                interpretation = `Moderate confidence prediction (${confidence}%). The CBC patterns indicate ${data.predicted_blood_group} blood group, but there's significant overlap with other types. Additional testing recommended.`;
+            } else {
+                interpretation = `Low confidence prediction (${confidence}%). The CBC parameters don't show strong differentiation between blood groups. Laboratory blood typing is essential for accurate determination.`;
+            }
+            
+            document.getElementById('interpretation').textContent = interpretation;
+        }
+
+        async function analyzeBloodGroup() {
+            clearErrors();
+            
+            try {
+                // Get input values
+                const inputValues = getInputValues();
+                
+                // Show loading
+                showLoading(true);
+                
+                // Make API call
+                const response = await fetch('/analyze_blood_group', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cbc_parameters: inputValues
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+                
+                // Show result
+                showResult(data);
+                
+            } catch (error) {
+                showError(error.message);
+                showLoading(false);
+            }
+        }
+
+        // Form submission
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            analyzeBloodGroup();
+        });
+
+        // Add input validation
+        document.querySelectorAll('select').forEach(input => {
+            input.addEventListener('change', function() {
+                this.classList.remove('error');
+            });
+        });
+
+        // Add keyboard support
+        document.querySelectorAll('select').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    analyzeBloodGroup();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

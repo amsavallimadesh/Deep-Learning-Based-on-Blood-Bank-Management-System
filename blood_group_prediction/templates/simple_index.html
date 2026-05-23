@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-grid {
+            display: grid;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .parameter-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .parameter-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .parameter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .parameter-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .parameter-unit {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .parameter-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .parameter-range {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .parameter-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .parameter-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .parameter-input.error {
+            border-color: #e74c3c;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            text-align: center;
+            padding: 40px 20px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-placeholder {
+            color: #999;
+            font-size: 1.2rem;
+        }
+
+        .blood-group-result {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .blood-group-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .blood-group-label {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .confidence-label {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .confidence-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .probabilities {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .prob-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .prob-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .prob-bar {
+            flex: 1;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .prob-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .prob-value {
+            font-weight: bold;
+            color: #333;
+            min-width: 60px;
+            text-align: right;
+            font-size: 1.1rem;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #fcc;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-card {
+                padding: 25px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🩸 Deep learning Blood Bank Management System/h1>
+            <p>Predict your blood group from 3 basic blood parameters</p>
+        </div>
+
+        <div class="main-card">
+            <h2 class="section-title">Enter Your Blood Test Results</h2>
+            <p class="section-subtitle">Fill in the 3 values below and click "Predict Blood Group"</p>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <div class="input-grid">
+                {% for key, param in parameters.items() %}
+                <div class="parameter-card">
+                    <div class="parameter-header">
+                        <span class="parameter-name">{{ param.name }}</span>
+                        <span class="parameter-unit">{{ param.unit }}</span>
+                    </div>
+                    <div class="parameter-description">{{ param.description }}</div>
+                    <div class="parameter-range">Normal Range: {{ param.normal_range }}</div>
+                    <input type="number" 
+                           class="parameter-input" 
+                           id="{{ key }}" 
+                           step="0.1" 
+                           placeholder="e.g., {{ param.example }}"
+                           value="{{ param.example }}">
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="predictBtn" onclick="predictBloodGroup()">
+                    🎯 Predict Blood Group
+                </button>
+                <button class="btn btn-secondary" id="clearBtn" onclick="clearInputs()">
+                    🔄 Clear Values
+                </button>
+            </div>
+
+            <div class="result-section" id="resultCard">
+                <div class="result-placeholder" id="placeholder">
+                    Enter your blood test results and click "Predict" to see your blood group
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your blood parameters...</p>
+                </div>
+                
+                <div class="blood-group-result" id="result" style="display: none;">
+                    <div class="blood-group-icon">🩸</div>
+                    <div class="blood-group-label" id="bloodGroup">-</div>
+                    <div class="confidence-label">Prediction Confidence</div>
+                    <div class="confidence-value" id="confidence">-%</div>
+                    
+                    <div class="probabilities" id="probabilities">
+                        <div class="prob-item">
+                            <span class="prob-label">Blood Group A</span>
+                            <div class="prob-bar">
+                                <div class="prob-fill" id="probA" style="width: 0%"></div>
+                            </div>
+                            <span class="prob-value" id="probAValue">0%</span>
+                        </div>
+                        <div class="prob-item">
+                            <span class="prob-label">Blood Group B</span>
+                            <div class="prob-bar">
+                                <div class="prob-fill" id="probB" style="width: 0%"></div>
+                            </div>
+                            <span class="prob-value" id="probBValue">0%</span>
+                        </div>
+                        <div class="prob-item">
+                            <span class="prob-label">Blood Group AB</span>
+                            <div class="prob-bar">
+                                <div class="prob-fill" id="probAB" style="width: 0%"></div>
+                            </div>
+                            <span class="prob-value" id="probABValue">0%</span>
+                        </div>
+                        <div class="prob-item">
+                            <span class="prob-label">Blood Group O</span>
+                            <div class="prob-bar">
+                                <div class="prob-fill" id="probO" style="width: 0%"></div>
+                            </div>
+                            <span class="prob-value" id="probOValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getInputValues() {
+            const values = [];
+            const parameterKeys = ['hemoglobin', 'platelets', 'wbc'];
+            
+            for (const key of parameterKeys) {
+                const input = document.getElementById(key);
+                const value = input.value.trim();
+                
+                if (value === '') {
+                    throw new Error(`${getParameterName(key)} is required`);
+                }
+                
+                const numValue = parseFloat(value);
+                if (isNaN(numValue)) {
+                    throw new Error(`${getParameterName(key)} must be a valid number`);
+                }
+                
+                values.push(numValue);
+            }
+            return values;
+        }
+
+        function getParameterName(key) {
+            const names = {
+                'hemoglobin': 'Hemoglobin',
+                'platelets': 'Platelet Count',
+                'wbc': 'White Blood Cells'
+            };
+            return names[key] || key;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function clearErrors() {
+            const inputs = document.querySelectorAll('.parameter-input');
+            inputs.forEach(input => input.classList.remove('error'));
+        }
+
+        function showLoading(show) {
+            document.getElementById('placeholder').style.display = show ? 'none' : 'block';
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('predictBtn').disabled = show;
+            document.getElementById('clearBtn').disabled = show;
+        }
+
+        function showResult(data) {
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            // Update main result
+            document.getElementById('bloodGroup').textContent = data.predicted_blood_group;
+            document.getElementById('confidence').textContent = data.confidence + '%';
+            
+            // Update probability bars
+            const probabilities = data.probabilities;
+            ['A', 'B', 'AB', 'O'].forEach(group => {
+                const prob = probabilities[group];
+                document.getElementById(`prob${group}`).style.width = prob + '%';
+                document.getElementById(`prob${group}Value`).textContent = prob.toFixed(1) + '%';
+            });
+        }
+
+        function clearInputs() {
+            const parameterKeys = ['hemoglobin', 'platelets', 'wbc'];
+            const defaultValues = [14.5, 250, 7.5]; // Example values
+            
+            parameterKeys.forEach((key, index) => {
+                document.getElementById(key).value = defaultValues[index];
+            });
+            
+            // Reset result display
+            document.getElementById('placeholder').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+        }
+
+        async function predictBloodGroup() {
+            clearErrors();
+            
+            try {
+                // Get input values
+                const inputValues = getInputValues();
+                
+                // Show loading
+                showLoading(true);
+                
+                // Make API call
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        input: inputValues
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Prediction failed');
+                }
+                
+                // Show result
+                showResult(data);
+                
+            } catch (error) {
+                showError(error.message);
+                showLoading(false);
+            }
+        }
+
+        // Add enter key support for inputs
+        document.querySelectorAll('.parameter-input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    predictBloodGroup();
+                }
+            });
+        });
+
+        // Add input validation
+        document.querySelectorAll('.parameter-input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+        });
+    </script>
+</body>
+</html>

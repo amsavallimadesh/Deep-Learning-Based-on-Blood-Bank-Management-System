@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodNet AI - Blood Bank Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .main-content {
+            padding: 30px 0;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+        }
+
+        .result-area {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            min-height: 100px;
+            display: none;
+        }
+
+        .result-area.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .blood-type-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #e1e8ed;
+            transition: all 0.3s ease;
+        }
+
+        .blood-type-card:hover {
+            transform: scale(1.05);
+        }
+
+        .blood-type {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stock-level {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stock-percentage {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            margin-top: 5px;
+        }
+
+        .donor-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s ease;
+        }
+
+        .donor-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .donor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .donor-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .match-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .donor-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .inventory-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span style="font-size: 2rem;">🩸</span>
+                    <h1>BloodNet AI</h1>
+                </div>
+                <nav class="nav-tabs">
+                    <button class="tab-btn active" onclick="switchTab('dashboard')">🏠 Dashboard</button>
+                    <button class="tab-btn" onclick="switchTab('demand')">📊 Demand Prediction</button>
+                    <button class="tab-btn" onclick="switchTab('donors')">🤝 Donor Matching</button>
+                    <button class="tab-btn" onclick="switchTab('analysis')">🔬 Blood Analysis</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div id="alert" class="alert"></div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <h2 class="card-title">System Overview</h2>
+                        </div>
+                        <div id="systemOverview">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading system overview...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🩸</div>
+                            <h2 class="card-title">Blood Inventory Status</h2>
+                        </div>
+                        <div id="inventoryStatus">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading inventory data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demand Prediction Tab -->
+            <div id="demand" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📊</div>
+                        <h2 class="card-title">Blood Demand Prediction</h2>
+                    </div>
+                    
+                    <form id="demandForm">
+                        <div class="form-group">
+                            <label for="hospitalSize">Hospital Size</label>
+                            <select id="hospitalSize" class="form-control" required>
+                                <option value="">Select hospital size...</option>
+                                <option value="small">Small (≤100 beds)</option>
+                                <option value="medium">Medium (100-500 beds)</option>
+                                <option value="large">Large (>500 beds)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="season">Current Season</label>
+                            <select id="season" class="form-control" required>
+                                <option value="">Select season...</option>
+                                <option value="winter">Winter (Dec-Feb)</option>
+                                <option value="spring">Spring (Mar-May)</option>
+                                <option value="summer">Summer (Jun-Aug)</option>
+                                <option value="monsoon">Monsoon (Sep-Nov)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="specialEvents">
+                                Special Events (marathons, festivals, etc.)
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">🔮 Predict Demand</button>
+                    </form>
+
+                    <div id="demandResult" class="result-area"></div>
+                </div>
+            </div>
+
+            <!-- Donor Matching Tab -->
+            <div id="donors" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🤝</div>
+                        <h2 class="card-title">Intelligent Donor Matching</h2>
+                    </div>
+                    
+                    <form id="donorForm">
+                        <div class="form-group">
+                            <label for="bloodType">Blood Type Needed</label>
+                            <select id="bloodType" class="form-control" required>
+                                <option value="">Select blood type...</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="urgency">Urgency Level</label>
+                            <select id="urgency" class="form-control" required>
+                                <option value="">Select urgency...</option>
+                                <option value="routine">Routine</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" class="form-control" 
+                                   placeholder="Enter hospital/location name" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">🔍 Find Donors</button>
+                    </form>
+
+                    <div id="donorResult" class="result-area"></div>
+                </div>
+            </div>
+
+            <!-- Blood Analysis Tab -->
+            <div id="analysis" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🔬</div>
+                        <h2 class="card-title">Blood Group Analysis from CBC</h2>
+                    </div>
+                    
+                    <form id="analysisForm">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div class="form-group">
+                                <label for="param1">Hemoglobin Level</label>
+                                <select id="param1" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    <option value="-1">Low</option>
+                                    <option value="0">Normal</option>
+                                    <option value="1">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="param2">RBC Count</label>
+                                <select id="param2" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    <option value="-1">Low</option>
+                                    <option value="0">Normal</option>
+                                    <option value="1">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="param3">WBC Count</label>
+                                <select id="param3" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    <option value="-1">Low</option>
+                                    <option value="0">Normal</option>
+                                    <option value="1">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="param4">Platelet Count</label>
+                                <select id="param4" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    <option value="-1">Low</option>
+                                    <option value="0">Normal</option>
+                                    <option value="1">High</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">🧪 Analyze Blood Group</button>
+                    </form>
+
+                    <div id="analysisResult" class="result-area"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentTab = 'dashboard';
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Load data for specific tabs
+            if (tabName === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type} show`;
+            alert.textContent = message;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/inventory_status');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayInventoryStatus(data.inventory, data.summary);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        function displayInventoryStatus(inventory, summary) {
+            const container = document.getElementById('inventoryStatus');
+            const overviewContainer = document.getElementById('systemOverview');
+            
+            // Create inventory grid
+            let inventoryHTML = '<div class="inventory-grid">';
+            for (const [bloodType, info] of Object.entries(inventory)) {
+                inventoryHTML += `
+                    <div class="blood-type-card" style="border-color: ${info.status_color};">
+                        <div class="blood-type">${bloodType}</div>
+                        <div class="stock-level">${info.current_units} units</div>
+                        <div class="stock-percentage">${info.stock_percentage}% of optimal</div>
+                        <span class="status-badge" style="background: ${info.status_color};">
+                            ${info.status.toUpperCase()}
+                        </span>
+                    </div>
+                `;
+            }
+            inventoryHTML += '</div>';
+            container.innerHTML = inventoryHTML;
+            
+            // Create overview
+            overviewContainer.innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #667eea; margin-bottom: 20px;">System Status</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div>
+                            <div style="font-size: 2rem; font-weight: bold; color: #667eea;">
+                                ${summary.total_units}
+                            </div>
+                            <div style="color: #666;">Total Blood Units</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">
+                                ${summary.critical_count}
+                            </div>
+                            <div style="color: #666;">Critical Types</div>
+                        </div>
+                    </div>
+                    ${summary.critical_count > 0 ? `
+                        <div style="margin-top: 20px; padding: 15px; background: #fee; border-radius: 10px;">
+                            <strong>⚠️ Critical Blood Types:</strong> ${summary.critical_types.join(', ')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Demand Prediction Form
+        document.getElementById('demandForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                hospital_size: document.getElementById('hospitalSize').value,
+                season: document.getElementById('season').value,
+                special_events: document.getElementById('specialEvents').checked
+            };
+            
+            try {
+                const response = await fetch('/predict_demand', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayDemandResults(data.predictions, data.generated_at);
+                    showAlert('Demand prediction completed successfully!');
+                } else {
+                    showAlert('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showAlert('Network error occurred', 'error');
+            }
+        });
+
+        function displayDemandResults(predictions, timestamp) {
+            const resultDiv = document.getElementById('demandResult');
+            
+            let html = `
+                <h3 style="margin-bottom: 20px;">📊 Predicted Blood Demand</h3>
+                <p style="color: #666; margin-bottom: 20px;">Generated at: ${timestamp}</p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            `;
+            
+            for (const [component, data] of Object.entries(predictions)) {
+                const urgencyColor = data.urgency === 'high' ? '#e74c3c' : 
+                                   data.urgency === 'medium' ? '#f39c12' : '#27ae60';
+                
+                html += `
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 15px; border: 2px solid #e1e8ed;">
+                        <h4 style="text-transform: uppercase; margin-bottom: 15px;">${component}</h4>
+                        <div style="font-size: 2rem; font-weight: bold; color: #667eea; margin-bottom: 10px;">
+                            ${data.predicted} units
+                        </div>
+                        <div style="color: #666; margin-bottom: 10px;">
+                            Range: ${data.confidence_range[0]} - ${data.confidence_range[1]} units
+                        </div>
+                        <span style="background: ${urgencyColor}; color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem;">
+                            ${data.urgency.toUpperCase()} PRIORITY
+                        </span>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+            resultDiv.classList.add('show');
+        }
+
+        // Donor Matching Form
+        document.getElementById('donorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                blood_type: document.getElementById('bloodType').value,
+                urgency: document.getElementById('urgency').value,
+                location: document.getElementById('location').value
+            };
+            
+            try {
+                const response = await fetch('/match_donors', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayDonorResults(data.donors, data.request_details);
+                    showAlert(`Found ${data.total_matched} matching donors!`);
+                } else {
+                    showAlert('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showAlert('Network error occurred', 'error');
+            }
+        });
+
+        function displayDonorResults(donors, requestDetails) {
+            const resultDiv = document.getElementById('donorResult');
+            
+            let html = `
+                <h3 style="margin-bottom: 20px;">🤝 Matching Donors</h3>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <strong>Request:</strong> ${requestDetails.blood_type} blood needed at ${requestDetails.location} 
+                    (<span style="color: ${requestDetails.urgency === 'critical' ? '#e74c3c' : '#667eea'}">${requestDetails.urgency.toUpperCase()}</span>)
+                </div>
+            `;
+            
+            donors.forEach(donor => {
+                html += `
+                    <div class="donor-card">
+                        <div class="donor-header">
+                            <div class="donor-name">${donor.name}</div>
+                            <div class="match-score">${donor.match_score}% Match</div>
+                        </div>
+                        <div class="donor-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Blood Type:</span>
+                                <span class="detail-value">${donor.blood_type}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Distance:</span>
+                                <span class="detail-value">${donor.distance_km} km</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Availability:</span>
+                                <span class="detail-value">${donor.availability_score}%</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Response Rate:</span>
+                                <span class="detail-value">${donor.response_rate}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Last Donation:</span>
+                                <span class="detail-value">${donor.last_donation}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Contact:</span>
+                                <span class="detail-value">${donor.contact_method}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+            resultDiv.classList.add('show');
+        }
+
+        // Blood Analysis Form
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const cbcParams = [];
+            for (let i = 1; i <= 14; i++) {
+                const value = document.getElementById(`param${i}`).value;
+                if (!value) {
+                    showAlert('Please fill all CBC parameters', 'error');
+                    return;
+                }
+                cbcParams.push(parseFloat(value));
+            }
+            
+            try {
+                const response = await fetch('/analyze_blood_group', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cbc_parameters: cbcParams })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayAnalysisResults(data);
+                    showAlert('Blood group analysis completed!');
+                } else {
+                    showAlert('Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showAlert('Network error occurred', 'error');
+            }
+        });
+
+        function displayAnalysisResults(data) {
+            const resultDiv = document.getElementById('analysisResult');
+            
+            let html = `
+                <h3 style="margin-bottom: 20px;">🔬 Blood Group Analysis Results</h3>
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="font-size: 3rem; font-weight: bold; color: #667eea; margin-bottom: 10px;">
+                        ${data.predicted_blood_group}
+                    </div>
+                    <div style="font-size: 1.2rem; color: #666; margin-bottom: 10px;">
+                        Predicted Blood Group
+                    </div>
+                    <div style="font-size: 2rem; font-weight: bold; color: #27ae60;">
+                        ${data.confidence}%
+                    </div>
+                    <div style="color: #666;">
+                        Confidence Level
+                    </div>
+                </div>
+                
+                <h4 style="margin-bottom: 15px;">Probability Distribution:</h4>
+                <div style="background: white; padding: 20px; border-radius: 15px;">
+            `;
+            
+            // Sort probabilities by value
+            const sortedProbs = Object.entries(data.probabilities)
+                .sort((a, b) => b[1] - a[1]);
+            
+            sortedProbs.forEach(([bloodType, probability]) => {
+                const barWidth = probability;
+                const isHighest = bloodType === data.predicted_blood_type;
+                
+                html += `
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: ${isHighest ? 'bold' : 'normal'}">${bloodType}</span>
+                            <span style="font-weight: ${isHighest ? 'bold' : 'normal'}">${probability.toFixed(1)}%</span>
+                        </div>
+                        <div style="background: #f0f0f0; height: 20px; border-radius: 10px; overflow: hidden;">
+                            <div style="width: ${barWidth}%; height: 100%; background: ${isHighest ? '#667eea' : '#ddd'}; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <p style="text-align: center; color: #666; margin-top: 20px;">
+                    Analysis completed at: ${data.analysis_time}
+                </p>
+            `;
+            
+            resultDiv.innerHTML = html;
+            resultDiv.classList.add('show');
+        }
+
+        // Load dashboard data on page load
+        window.addEventListener('load', () => {
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>

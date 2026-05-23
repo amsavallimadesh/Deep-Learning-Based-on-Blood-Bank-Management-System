@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Demand Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Blood Demand Prediction</h1>
+            <p>Predict blood units needed for your hospital</p>
+        </div>
+
+        <div class="card">
+            <div class="error" id="error"></div>
+            
+            <form id="predictForm">
+                <div class="form-group">
+                    <label for="hospitalSize">Hospital Size</label>
+                    <select id="hospitalSize" class="form-control" required>
+                        <option value="">Select hospital size...</option>
+                        <option value="small">Small Hospital (≤100 beds)</option>
+                        <option value="medium">Medium Hospital (100-500 beds)</option>
+                        <option value="large">Large Hospital (>500 beds)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="season">Current Season</label>
+                    <select id="season" class="form-control" required>
+                        <option value="">Select season...</option>
+                        <option value="winter">Winter (Dec-Feb)</option>
+                        <option value="spring">Spring (Mar-May)</option>
+                        <option value="summer">Summer (Jun-Aug)</option>
+                        <option value="monsoon">Monsoon (Sep-Nov)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" id="predictBtn">
+                    🔮 Predict Blood Demand
+                </button>
+            </form>
+
+            <div class="result" id="result">
+                <div class="result-number" id="resultNumber">0</div>
+                <div class="result-message" id="resultMessage"></div>
+                <a href="/" class="back-btn">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const hospitalSize = document.getElementById('hospitalSize').value;
+            const season = document.getElementById('season').value;
+            
+            if (!hospitalSize || !season) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            const btn = document.getElementById('predictBtn');
+            btn.disabled = true;
+            btn.textContent = 'Predicting...';
+
+            try {
+                const response = await fetch('/predict_demand', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hospital_size: hospitalSize,
+                        season: season
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showResult(data.predicted_units, data.message);
+                } else {
+                    showError(data.error || 'Prediction failed');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔮 Predict Blood Demand';
+            }
+        });
+
+        function showResult(units, message) {
+            document.getElementById('resultNumber').textContent = units;
+            document.getElementById('resultMessage').textContent = message;
+            document.getElementById('result').classList.add('show');
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
